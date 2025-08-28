@@ -3,7 +3,18 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    domains: ["product.hstatic.net"],
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "assets.example.com",
+        port: "",
+        pathname: "/account123/**",
+      },
+      {
+        protocol: "https",
+        hostname: "encrypted-tbn0.gstatic.com",
+      },
       {
         protocol: "https",
         hostname: "example.com",
@@ -24,6 +35,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    unoptimized: true,
   },
 };
 

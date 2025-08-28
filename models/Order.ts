@@ -10,7 +10,7 @@ export interface IOrder extends Document {
   userId: mongoose.Types.ObjectId;
   items: IOrderItem[];
   totalPrice: number;
-  status: "pending" | "preparing" | "delivering" | "completed";
+  status: "pending" | "preparing" | "delivering" | "completed" | "cancelled";
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -30,7 +30,7 @@ const OrderSchema = new Schema<IOrder>(
     totalPrice: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "preparing", "delivering", "completed"],
+      enum: ["pending", "preparing", "delivering", "completed", "cancelled"],
       default: "pending",
     },
   },
