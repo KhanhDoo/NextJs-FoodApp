@@ -21,7 +21,8 @@ export default function LoginPage() {
     if (res.ok && data.token) {
       setToken(data.token);
       setMsg("Đăng nhập thành công!");
-      setTimeout(() => router.push("/products"), 500);
+      // Reload trang để Navbar cập nhật đúng role
+      setTimeout(() => (window.location.href = "/products"), 500);
     } else {
       setMsg(data.message || "Sai thông tin đăng nhập");
     }

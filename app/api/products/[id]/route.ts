@@ -5,11 +5,12 @@ import { verifyToken } from "@/lib/auth";
 // 🔹 GET /api/products/:id → ai cũng có thể xem chi tiết
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     await connectDB();
-    const product = await Product.findById(params.id);
+    const { id } = await context.params;
+    const product = await Product.findById(id);
     if (!product) {
       return Response.json(
         { message: "Không tìm thấy sản phẩm" },
@@ -27,9 +28,10 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const authHeader = req.headers.get("authorization");
     const token = authHeader?.split(" ")[1] || null;
     const payload = verifyToken(token);
@@ -39,7 +41,7 @@ export async function PUT(
     }
 
     const data = await req.json();
-    const updated = await Product.findByIdAndUpdate(params.id, data, {
+    const updated = await Product.findByIdAndUpdate(id, data, {
       new: true,
     });
 
@@ -65,9 +67,10 @@ export async function PUT(
 // 🔹 DELETE /api/products/:id → admin xóa sản phẩm
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const authHeader = req.headers.get("authorization");
     const token = authHeader?.split(" ")[1] || null;
     const payload = verifyToken(token);
@@ -76,7 +79,7 @@ export async function DELETE(
       return Response.json({ message: "Bạn không có quyền" }, { status: 403 });
     }
 
-    const deleted = await Product.findByIdAndDelete(params.id);
+    const deleted = await Product.findByIdAndDelete(id);
     if (!deleted) {
       return Response.json(
         { message: "Không tìm thấy sản phẩm" },

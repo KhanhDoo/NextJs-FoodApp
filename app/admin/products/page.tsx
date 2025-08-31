@@ -147,6 +147,25 @@ export default function AdminProducts() {
             >
               Xóa
             </button>
+            <button
+              className="mt-2 w-full border rounded-lg py-2 hover:bg-gray-50"
+              onClick={async () => {
+                await apiFetch(`/api/products/${p._id}/toggle`, {
+                  method: "PATCH",
+                });
+                loadProducts();
+              }}
+            >
+              {p.available ? "Ẩn" : "Hiện"}
+            </button>
+            <button
+              className="mt-2 w-full border rounded-lg py-2 hover:bg-gray-50"
+              onClick={() => {
+                /* show edit form logic here */
+              }}
+            >
+              Sửa
+            </button>
           </div>
         ))}
       </div>

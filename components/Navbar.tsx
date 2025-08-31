@@ -1,21 +1,49 @@
 // components/Navbar.tsx
+// components/Navbar.tsx
 "use client";
 import Link from "next/link";
 import { useCart } from "@/app/providers";
-import { clearToken, getToken } from "@/lib/client-auth";
+import { clearToken, getToken, getUserFromToken } from "@/lib/client-auth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { totalQty } = useCart();
   const [authed, setAuthed] = useState(false);
+  const [userRole, setUserRole] = useState<"user" | "admin" | null>(null);
   const router = useRouter();
 
-  useEffect(() => setAuthed(!!getToken()), []);
+  const updateAuthState = () => {
+    const token = getToken();
+    if (token) {
+      setAuthed(true);
+      const user = getUserFromToken();
+      setUserRole(user?.role || null);
+    } else {
+      setAuthed(false);
+      setUserRole(null);
+    }
+  };
+
+  useEffect(() => {
+    updateAuthState();
+
+    // Listen for storage changes (when token is set/removed in other tabs)
+    const handleStorageChange = () => {
+      updateAuthState();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const logout = () => {
     clearToken();
     setAuthed(false);
+    setUserRole(null);
     router.push("/auth/login");
   };
 
@@ -32,9 +60,11 @@ export default function Navbar() {
           <Link href="/orders" className="hover:underline">
             Đơn hàng
           </Link>
-          <Link href="/admin/products" className="hover:underline">
-            Admin
-          </Link>
+          {userRole === "admin" && (
+            <Link href="/admin/products" className="hover:underline">
+              Admin
+            </Link>
+          )}
         </nav>
         <Link href="/cart" className="px-3 py-1 rounded bg-gray-100">
           Giỏ hàng ({totalQty})

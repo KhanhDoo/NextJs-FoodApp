@@ -1,20 +1,12 @@
 import { connectDB } from "@/lib/db";
-import Product from "@/models/Product";
 import { verifyToken } from "@/lib/auth";
+import Category from "@/models/Category";
 
-// 🔹 GET /api/products → tất cả user có thể xem danh sách
-export async function GET(req: Request) {
+export async function GET() {
   try {
     await connectDB();
-    const url = new URL(req.url);
-    const all = url.searchParams.get("all");
-    let products;
-    if (all === "1") {
-      products = await Product.find();
-    } else {
-      products = await Product.find({ available: true });
-    }
-    return Response.json({ products }, { status: 200 });
+    const categories = await Category.find().sort({ name: 1 });
+    return Response.json({ categories });
   } catch (err: unknown) {
     if (err instanceof Error) {
       return Response.json({ message: err.message }, { status: 500 });
@@ -23,35 +15,22 @@ export async function GET(req: Request) {
   }
 }
 
-// 🔹 POST /api/products → chỉ admin mới thêm sản phẩm
 export async function POST(req: Request) {
   try {
     await connectDB();
-
     const authHeader = req.headers.get("authorization");
     const token = authHeader?.split(" ")[1] || null;
     const payload = verifyToken(token);
-
-    if (!payload || payload.role !== "admin") {
+    if (!payload || payload.role !== "admin")
       return Response.json({ message: "Bạn không có quyền" }, { status: 403 });
-    }
 
-    const { name, description, price, imageUrl, category } = await req.json();
-    if (!name || !description || !price || !imageUrl || !category) {
+    const { name, slug } = await req.json();
+    if (!name || !slug)
       return Response.json({ message: "Thiếu dữ liệu" }, { status: 400 });
-    }
 
-    const product = new Product({
-      name,
-      description,
-      price,
-      imageUrl,
-      category,
-    });
-    await product.save();
-
+    const created = await Category.create({ name, slug });
     return Response.json(
-      { message: "Thêm sản phẩm thành công", product },
+      { message: "Tạo danh mục thành công", category: created },
       { status: 201 },
     );
   } catch (err: unknown) {

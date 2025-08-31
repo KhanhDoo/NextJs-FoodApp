@@ -23,7 +23,23 @@ export async function GET(req: Request) {
       return Response.json({ message: "Bạn không có quyền" }, { status: 403 });
     }
 
-    const users = await User.find().select("-passwordHash");
+    // Parse filters
+    const url = new URL(req.url);
+    const search = (url.searchParams.get("search") || "").trim();
+    const role = (url.searchParams.get("role") || "").trim();
+
+    const query: Record<string, unknown> = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (role === "user" || role === "admin") {
+      query.role = role;
+    }
+
+    const users = await User.find(query).select("-passwordHash");
     return Response.json({ users }, { status: 200 });
   } catch (e: unknown) {
     if (e instanceof Error) {

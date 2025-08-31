@@ -17,6 +17,13 @@ export async function POST(req: Request) {
       return Response.json({ message: "Email không tồn tại" }, { status: 400 });
     }
 
+    if (user.locked) {
+      return Response.json(
+        { message: "Tài khoản đã bị khóa" },
+        { status: 403 },
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return Response.json({ message: "Sai mật khẩu" }, { status: 400 });

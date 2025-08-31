@@ -15,3 +15,30 @@ export function clearToken() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
 }
+
+// Function để decode JWT token và lấy thông tin user
+export function getUserFromToken(): {
+  id: string;
+  role: "user" | "admin";
+} | null {
+  if (typeof window === "undefined") return null;
+
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    // JWT token có format: header.payload.signature
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+
+    // Decode base64 payload
+    const decodedPayload = JSON.parse(atob(payload));
+    return {
+      id: decodedPayload.id,
+      role: decodedPayload.role,
+    };
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+}
